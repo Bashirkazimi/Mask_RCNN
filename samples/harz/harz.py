@@ -50,7 +50,7 @@ class HarzConfig(Config):
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
     GPU_COUNT = 2
-    IMAGES_PER_GPU = 8
+    IMAGES_PER_GPU = 12
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 4  # background + 3 shapes
@@ -328,7 +328,7 @@ if __name__ == '__main__':
         print("Fine tune Resnet stage 4 and up")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=20,
+                    epochs=40,
                     layers='4+',
                     augmentation=augmentation)
 
@@ -337,7 +337,7 @@ if __name__ == '__main__':
         print("Fine tune all layers")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE / 10,
-                    epochs=60,
+                    epochs=100,
                     layers='all',
                     augmentation=augmentation)
 

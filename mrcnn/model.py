@@ -1456,6 +1456,12 @@ def build_rpn_targets(image_shape, anchors, gt_class_ids, gt_boxes, config):
     rpn_bbox: [N, (dy, dx, log(dh), log(dw))] Anchor bbox deltas.
     """
     # RPN Match: 1 = positive anchor, -1 = negative anchor, 0 = neutral
+    # RPN Match: 1 = positive anchor, -1 = negative anchor, 0 = neutral
+    if gt_class_ids.shape[0] == 0: 
+        rpn_match = -1 * np.ones([anchors.shape[0]], dtype=np.int32)
+        rpn_bbox = generate_random_rois(image_shape, config.RPN_TRAIN_ANCHORS_PER_IMAGE, gt_class_ids, gt_boxes)
+        return rpn_match, rpn_bbox
+
     rpn_match = np.zeros([anchors.shape[0]], dtype=np.int32)
     # RPN bounding boxes: [max anchors per image, (dy, dx, log(dh), log(dw))]
     rpn_bbox = np.zeros((config.RPN_TRAIN_ANCHORS_PER_IMAGE, 4))
@@ -1568,7 +1574,7 @@ def generate_random_rois(image_shape, count, gt_class_ids, gt_boxes):
     rois = np.zeros((count, 4), dtype=np.int32)
 
     # Generate random ROIs around GT boxes (90% of count)
-    rois_per_box = int(0.9 * count / gt_boxes.shape[0])
+    rois_per_box = int(0.9 * count / gt_boxes.shape[0]+0.000001)
     for i in range(gt_boxes.shape[0]):
         gt_y1, gt_x1, gt_y2, gt_x2 = gt_boxes[i]
         h = gt_y2 - gt_y1
@@ -1711,8 +1717,8 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
             # Skip images that have no instances. This can happen in cases
             # where we train on a subset of classes and the image doesn't
             # have any of the classes we care about.
-            if not np.any(gt_class_ids > 0):
-                continue
+            # if not np.any(gt_class_ids > 0):
+            #     continue
 
             # RPN Targets
             rpn_match, rpn_bbox = build_rpn_targets(image.shape, anchors,
